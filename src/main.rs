@@ -1,21 +1,27 @@
-use amethyst::core::transform::TransformBundle;
-use amethyst::prelude::*;
-use amethyst::renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline,
-                         RenderBundle, Stage, VirtualKeyCode};
-use amethyst::utils::application_root_dir;
+use amethyst::{
+    core::transform::TransformBundle,
+    input::InputBundle,
+    prelude::*,
+    renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline, RenderBundle, Stage, VirtualKeyCode},
+    utils::application_root_dir,
+};
 
 use pong::Pong;
 
 mod pong;
+mod systems;
 
 fn main() -> amethyst::Result<()> {
     amethyst::start_logger(Default::default());
 
     let app_root = application_root_dir()?;
 
-    // load configuration
+    // display configuration
     let display_config_path = app_root.join("resources/display_config.ron");
-    let config = DisplayConfig::load(&display_config_path);
+    let display_config = DisplayConfig::load(&display_config_path);
+
+    // bindings configuration
+    let bindings_config_path = app_root.join("resources/bindings_config.ron");
 
     let pipe = Pipeline::build()
         .with_stage(
@@ -25,8 +31,10 @@ fn main() -> amethyst::Result<()> {
         );
 
     let game_data = GameDataBuilder::default()
-        .with_bundle(RenderBundle::new(pipe, Some(config)).with_sprite_sheet_processor())?
-        .with_bundle(TransformBundle::new())?;
+        .with_bundle(RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor())?
+        .with_bundle(TransformBundle::new())?
+        .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(bindings_config_path)?)?
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"]);
 
     let assets_dir = app_root.join("assets");
 

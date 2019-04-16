@@ -1,19 +1,17 @@
-use amethyst::assets::{AssetStorage, Loader};
-use amethyst::core::transform::Transform;
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
-use amethyst::prelude::*;
-use amethyst::renderer::{
-    Camera, PngFormat, Projection, SpriteRender, SpriteSheet, Flipped,
-    SpriteSheetFormat, SpriteSheetHandle, Texture, TextureMetadata,
+use amethyst::{
+    assets::{AssetStorage, Loader},
+    core::transform::Transform,
+    ecs::prelude::{Component, DenseVecStorage},
+    prelude::*,
+    renderer::{Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
+               SpriteSheetHandle, Texture, TextureMetadata},
 };
 
-// public constants
+// constants
 pub const ARENA_HEIGHT: f32 = 100.0;
 pub const ARENA_WIDTH: f32 = 100.0;
-
-// private constants
-const PADDLE_HEIGHT: f32 = 16.0;
-const PADDLE_WIDTH: f32 = 4.0;
+pub const PADDLE_HEIGHT: f32 = 16.0;
+pub const PADDLE_WIDTH: f32 = 4.0;
 
 pub struct Pong;
 
@@ -23,8 +21,6 @@ impl SimpleState for Pong {
 
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
-
-        world.register::<Paddle>();
 
         initialise_paddles(world, sprite_sheet_handle);
         initialise_camera(world);

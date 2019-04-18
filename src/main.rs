@@ -2,7 +2,7 @@ use amethyst::{
     core::transform::TransformBundle,
     input::InputBundle,
     prelude::*,
-    renderer::{DisplayConfig, DrawFlat2D, Event, Pipeline, RenderBundle, Stage, VirtualKeyCode},
+    renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
     ui::{DrawUi, UiBundle},
     utils::application_root_dir,
 };

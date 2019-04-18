@@ -112,7 +112,7 @@ fn initialise_ball(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
 /// Initialise a ui scoreboard
 fn initialise_scoreboard(world: &mut World) {
     let font = world.read_resource::<Loader>().load(
-        "font/square.ttf",
+        "fonts/square.ttf",
         TtfFormat,
         Default::default(),
         (),
@@ -161,7 +161,7 @@ fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
         let loader = world.read_resource::<Loader>();
         let texture_storage = world.read_resource::<AssetStorage<Texture>>();
         loader.load(
-            "texture/pong_spritesheet.png",
+            "textures/pong_spritesheet.png",
             PngFormat,
             TextureMetadata::srgb_scale(),
             (),
@@ -172,7 +172,7 @@ fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
     let loader = world.read_resource::<Loader>();
     let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
     loader.load(
-        "texture/pong_spritesheet.ron", // Here we load the associated ron file
+        "textures/pong_spritesheet.ron", // Here we load the associated ron file
         SpriteSheetFormat,
         texture_handle, // We pass it the texture we want it to use
         (),

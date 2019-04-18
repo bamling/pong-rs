@@ -1,10 +1,11 @@
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::transform::Transform,
-    ecs::prelude::{Component, DenseVecStorage},
+    ecs::prelude::{Component, DenseVecStorage, Entity},
     prelude::*,
     renderer::{Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
                SpriteSheetHandle, Texture, TextureMetadata},
+    ui::{Anchor, TtfFormat, UiText, UiTransform},
 };
 
 // constants
@@ -25,10 +26,9 @@ impl SimpleState for Pong {
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
-        world.register::<Ball>();
-
         initialise_paddles(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
+        initialise_scoreboard(world);
         initialise_camera(world);
     }
 }
@@ -68,6 +68,18 @@ impl Component for Ball {
     type Storage = DenseVecStorage<Self>;
 }
 
+/// ScoreBoard contains the actual score data
+#[derive(Default)]
+pub struct ScoreBoard {
+    pub score_left: i32,
+    pub score_right: i32,
+}
+
+/// ScoreTest contains the ui text components that display the score
+pub struct ScoreText {
+    pub p1_score: Entity,
+    pub p2_score: Entity,
+}
 
 /// Initialise the camera
 fn initialise_camera(world: &mut World) {
@@ -136,10 +148,52 @@ fn initialise_ball(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
         .with(sprite_render)
         .with(Ball {
             radius: BALL_RADIUS,
-            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y]
+            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
         })
         .with(local_transform)
         .build();
+}
+
+/// Initialise a ui scoreboard
+fn initialise_scoreboard(world: &mut World) {
+    let font = world.read_resource::<Loader>().load(
+        "font/square.ttf",
+        TtfFormat,
+        Default::default(),
+        (),
+        &world.read_resource(),
+    );
+
+    let p1_transform = UiTransform::new(
+        "P1".to_string(), Anchor::TopMiddle,
+        -50.0, -50.0, 1.0, 200.0, 50.0,
+    );
+    let p2_transform = UiTransform::new(
+        "P2".to_string(), Anchor::TopMiddle,
+        50.0, -50.0, 1.0, 200.0, 50.0,
+    );
+
+    let p1_score = world
+        .create_entity()
+        .with(p1_transform)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+    let p2_score = world
+        .create_entity()
+        .with(p2_transform)
+        .with(UiText::new(
+            font.clone(),
+            "0".to_string(),
+            [1.0, 1.0, 1.0, 1.0],
+            50.0,
+        )).build();
+
+    world.add_resource(ScoreText {p1_score, p2_score});
 }
 
 /// Load the sprite sheet

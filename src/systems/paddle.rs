@@ -1,4 +1,8 @@
-use amethyst::{core::Transform, ecs::{Join, Read, ReadStorage, System, WriteStorage}, input::InputHandler, Trans};
+use amethyst::{
+    core::Transform,
+    ecs::{Join, Read, ReadStorage, System, WriteStorage},
+    input::InputHandler, Trans
+};
 
 use crate::pong::{ARENA_HEIGHT, Paddle, PADDLE_HEIGHT, Side};
 
@@ -13,6 +17,9 @@ impl<'s> System<'s> for PaddleSystem {
 
     fn run(&mut self, (mut transforms, paddles, input): Self::SystemData) {
         for (paddle, transform) in (&paddles, &mut transforms).join() {
+            let paddle: &Paddle = paddle;
+            let transform: &mut Transform = transform;
+
             let movement = match paddle.side {
                 Side::Left => input.axis_value("left_paddle"),
                 Side::Right => input.axis_value("right_paddle"),

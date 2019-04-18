@@ -34,7 +34,9 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
         .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(bindings_config_path)?)?
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"]);
+        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
+        .with(systems::MoveBallsSystem, "move_balls_system", &[])
+        .with(systems::BounceSystem, "bounce_system", &["paddle_system", "move_balls_system"]);
 
     let assets_dir = app_root.join("assets");
 

@@ -3,7 +3,10 @@ use amethyst::{
     ecs::prelude::{Join, ReadStorage, System, WriteStorage},
 };
 
-use crate::pong::{Ball, Side, Paddle, ARENA_HEIGHT};
+use crate::{
+    components::{Ball, Paddle, Side},
+    constants::ARENA_HEIGHT,
+};
 
 pub struct BounceSystem;
 
@@ -20,7 +23,7 @@ impl<'s> System<'s> for BounceSystem {
         // We also check for the velocity of the ball every time, to prevent multiple collisions
         // from occurring.
         for (ball, transform) in (&mut balls, &transforms).join() {
-            let ball: &mut Ball= ball;
+            let ball: &mut Ball = ball;
             let transform: &Transform = transform;
 
             let ball_x = transform.translation().x;
@@ -29,7 +32,6 @@ impl<'s> System<'s> for BounceSystem {
             // Bounce at the top or the bottom of the arena.
             if (ball_y <= ball.radius && ball.velocity[1] < 0.0)
                 || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0) {
-
                 ball.velocity[1] = -ball.velocity[1];
             }
 
@@ -56,7 +58,6 @@ impl<'s> System<'s> for BounceSystem {
                 ) {
                     if (paddle.side == Side::Left && ball.velocity[0] < 0.0)
                         || (paddle.side == Side::Right && ball.velocity[0] > 0.0) {
-
                         ball.velocity[0] = -ball.velocity[0];
                     }
                 }

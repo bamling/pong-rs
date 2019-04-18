@@ -7,9 +7,12 @@ use amethyst::{
     utils::application_root_dir,
 };
 
-use pong::Pong;
+use states::pong::Pong;
 
-mod pong;
+mod components;
+mod constants;
+mod resources;
+mod states;
 mod systems;
 
 fn main() -> amethyst::Result<()> {

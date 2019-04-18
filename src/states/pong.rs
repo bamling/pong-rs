@@ -1,21 +1,24 @@
 use amethyst::{
     assets::{AssetStorage, Loader},
     core::transform::Transform,
-    ecs::prelude::{Component, DenseVecStorage, Entity},
     prelude::*,
     renderer::{Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
                SpriteSheetHandle, Texture, TextureMetadata},
     ui::{Anchor, TtfFormat, UiText, UiTransform},
 };
 
-// constants
-pub const ARENA_HEIGHT: f32 = 100.0;
-pub const ARENA_WIDTH: f32 = 100.0;
-pub const PADDLE_HEIGHT: f32 = 16.0;
-pub const PADDLE_WIDTH: f32 = 4.0;
-pub const BALL_VELOCITY_X: f32 = 75.0;
-pub const BALL_VELOCITY_Y: f32 = 50.0;
-pub const BALL_RADIUS: f32 = 2.0;
+use crate::{
+    components::{Ball, Paddle, Side},
+    constants::{
+        ARENA_HEIGHT,
+        ARENA_WIDTH,
+        BALL_RADIUS,
+        BALL_VELOCITY_X,
+        BALL_VELOCITY_Y,
+        PADDLE_WIDTH,
+    },
+    resources::ScoreText,
+};
 
 pub struct Pong;
 
@@ -31,54 +34,6 @@ impl SimpleState for Pong {
         initialise_scoreboard(world);
         initialise_camera(world);
     }
-}
-
-#[derive(PartialEq, Eq)]
-pub enum Side {
-    Left,
-    Right,
-}
-
-pub struct Paddle {
-    pub side: Side,
-    pub width: f32,
-    pub height: f32,
-}
-
-impl Paddle {
-    fn new(side: Side) -> Paddle {
-        Paddle {
-            side,
-            width: PADDLE_WIDTH,
-            height: PADDLE_HEIGHT,
-        }
-    }
-}
-
-impl Component for Paddle {
-    type Storage = DenseVecStorage<Self>;
-}
-
-pub struct Ball {
-    pub velocity: [f32; 2],
-    pub radius: f32,
-}
-
-impl Component for Ball {
-    type Storage = DenseVecStorage<Self>;
-}
-
-/// ScoreBoard contains the actual score data
-#[derive(Default)]
-pub struct ScoreBoard {
-    pub score_left: i32,
-    pub score_right: i32,
-}
-
-/// ScoreTest contains the ui text components that display the score
-pub struct ScoreText {
-    pub p1_score: Entity,
-    pub p2_score: Entity,
 }
 
 /// Initialise the camera
@@ -193,7 +148,7 @@ fn initialise_scoreboard(world: &mut World) {
             50.0,
         )).build();
 
-    world.add_resource(ScoreText {p1_score, p2_score});
+    world.add_resource(ScoreText { p1_score, p2_score });
 }
 
 /// Load the sprite sheet

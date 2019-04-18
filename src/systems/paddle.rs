@@ -1,10 +1,13 @@
 use amethyst::{
     core::Transform,
     ecs::{Join, Read, ReadStorage, System, WriteStorage},
-    input::InputHandler
+    input::InputHandler,
 };
 
-use crate::pong::{ARENA_HEIGHT, Paddle, PADDLE_HEIGHT, Side};
+use crate::{
+    components::{Paddle, Side},
+    constants::{ARENA_HEIGHT, PADDLE_HEIGHT},
+};
 
 pub struct PaddleSystem;
 

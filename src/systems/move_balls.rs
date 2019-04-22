@@ -8,9 +8,12 @@ use amethyst::{
 
 use crate::components::ball::Ball;
 
-pub struct MoveBallsSystem;
+/// The MoveBalls system handles the moving of the balls inside the arena. The balls move according
+/// to the amount of time passed between frames.
+#[derive(Default)]
+pub struct MoveBalls;
 
-impl<'s> System<'s> for MoveBallsSystem {
+impl<'s> System<'s> for MoveBalls {
     type SystemData = (
         ReadStorage<'s, Ball>,
         WriteStorage<'s, Transform>,

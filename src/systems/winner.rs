@@ -6,13 +6,14 @@ use amethyst::{
 
 use crate::{
     components::Ball,
-    constants::ARENA_WIDTH,
     resources::{ScoreBoard, ScoreText},
+    states::pong::ARENA_WIDTH,
 };
 
-pub struct WinnerSystem;
+#[derive(Default)]
+pub struct Winner;
 
-impl<'s> System<'s> for WinnerSystem {
+impl<'s> System<'s> for Winner {
     type SystemData = (
         WriteStorage<'s, Ball>,
         WriteStorage<'s, Transform>,

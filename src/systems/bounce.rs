@@ -5,12 +5,15 @@ use amethyst::{
 
 use crate::{
     components::{Ball, Paddle, Side},
-    constants::ARENA_HEIGHT,
+    states::pong::ARENA_HEIGHT,
 };
 
-pub struct BounceSystem;
+/// The Bounce system handles the collision between balls and the paddles and arena. When a
+/// collision takes places, the balls velocity is reversed.
+#[derive(Default)]
+pub struct Bounce;
 
-impl<'s> System<'s> for BounceSystem {
+impl<'s> System<'s> for Bounce {
     type SystemData = (
         WriteStorage<'s, Ball>,
         ReadStorage<'s, Paddle>,

@@ -1,12 +1,9 @@
-pub use self::{
-    bounce::BounceSystem,
-    move_balls::MoveBallsSystem,
-    paddle::PaddleSystem,
-    winner::WinnerSystem
-};
+pub use self::bundle::GameBundle;
 
 mod bounce;
+mod bundle;
 mod move_balls;
-mod paddle;
+mod move_paddles;
+mod player_input;
 mod winner;
 

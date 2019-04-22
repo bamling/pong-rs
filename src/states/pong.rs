@@ -8,17 +8,21 @@ use amethyst::{
 };
 
 use crate::{
-    components::{Ball, Paddle, Side},
-    constants::{
-        ARENA_HEIGHT,
-        ARENA_WIDTH,
+    components::{
+        Ball,
         BALL_RADIUS,
         BALL_VELOCITY_X,
         BALL_VELOCITY_Y,
+        Paddle,
         PADDLE_WIDTH,
+        Side,
     },
-    resources::ScoreText,
+    resources::{Players, PlayersActive, ScoreText},
 };
+
+/// Constants.
+pub const ARENA_HEIGHT: f32 = 100.0;
+pub const ARENA_WIDTH: f32 = 100.0;
 
 pub struct Pong;
 
@@ -29,10 +33,10 @@ impl SimpleState for Pong {
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
-        initialise_paddles(world, sprite_sheet_handle.clone());
+        initialise_camera(world);
+        initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
         initialise_scoreboard(world);
-        initialise_camera(world);
     }
 }
 
@@ -53,7 +57,7 @@ fn initialise_camera(world: &mut World) {
 }
 
 /// Initialise the paddles
-fn initialise_paddles(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
+fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
     let mut left_transform = Transform::default();
     let mut right_transform = Transform::default();
 
@@ -68,22 +72,25 @@ fn initialise_paddles(world: &mut World, sprite_sheet_handle: SpriteSheetHandle)
         sprite_number: 0, // paddle is the first sprite in the sprite_sheet
     };
 
-    // create a left plank entity
-    world
+    // create player 1 entity
+    let p1 = world
         .create_entity()
         .with(sprite_render.clone())
         .with(Paddle::new(Side::Left))
         .with(left_transform)
         .build();
 
-    // create a right plank entity
-    world
+    // create player 2 entity
+    let p2 = world
         .create_entity()
         .with(sprite_render.clone())
         .with(Flipped::Horizontal)
         .with(Paddle::new(Side::Right))
         .with(right_transform)
         .build();
+
+    world.add_resource(Players { p1, p2 });
+    world.add_resource(PlayersActive::default()); // TODO: actually select players
 }
 
 /// Initialise the ball

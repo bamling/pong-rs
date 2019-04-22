@@ -10,7 +10,6 @@ use amethyst::{
 use states::pong::Pong;
 
 mod components;
-mod constants;
 mod resources;
 mod states;
 mod systems;
@@ -24,8 +23,8 @@ fn main() -> amethyst::Result<()> {
     let display_config_path = app_root.join("resources/display_config.ron");
     let display_config = DisplayConfig::load(&display_config_path);
 
-    // bindings configuration
-    let bindings_config_path = app_root.join("resources/bindings_config.ron");
+    // key bindings
+    let key_bindings_path = app_root.join("resources/input.ron");
 
     let pipe = Pipeline::build()
         .with_stage(
@@ -38,14 +37,11 @@ fn main() -> amethyst::Result<()> {
     let game_data = GameDataBuilder::default()
         .with_bundle(RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
-        .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(bindings_config_path)?)?
+        .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(key_bindings_path)?)?
         .with_bundle(UiBundle::<String, String>::new())?
-        .with(systems::PaddleSystem, "paddle_system", &["input_system"])
-        .with(systems::MoveBallsSystem, "move_balls_system", &[])
-        .with(systems::BounceSystem, "bounce_system", &["paddle_system", "move_balls_system"])
-        .with(systems::WinnerSystem, "winner_system", &["move_balls_system"]);
+        .with_bundle(systems::GameBundle)?;
 
-    let assets_dir = app_root.join("assets");
+    let assets_dir = app_root.join("resources/assets");
 
     let mut game = Application::build(assets_dir, Pong)?
         .build(game_data)?;

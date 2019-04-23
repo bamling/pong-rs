@@ -3,11 +3,6 @@ use amethyst::ecs::prelude::{
     DenseVecStorage
 };
 
-/// Constants.
-pub const BALL_VELOCITY_X: f32 = 75.0;
-pub const BALL_VELOCITY_Y: f32 = 50.0;
-pub const BALL_RADIUS: f32 = 2.0;
-
 /// The Ball component contains data that defines a ball on the field, such as the radius
 /// and the velocity.
 pub struct Ball {

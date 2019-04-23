@@ -2,9 +2,10 @@ use amethyst::{
     core::transform::Transform,
     ecs::prelude::{
         Join,
+        Read,
         ReadStorage,
         System,
-        WriteStorage
+        WriteStorage,
     },
 };
 
@@ -12,9 +13,9 @@ use crate::{
     components::{
         Ball,
         Paddle,
-        Side
+        Side,
     },
-    states::game::ARENA_HEIGHT,
+    config::ArenaConfig,
 };
 
 /// The Bounce system handles the collision between balls and the paddles and arena. When a
@@ -24,12 +25,13 @@ pub struct BounceSystem;
 
 impl<'s> System<'s> for BounceSystem {
     type SystemData = (
-        WriteStorage<'s, Ball>,
+        Read<'s, ArenaConfig>,
         ReadStorage<'s, Paddle>,
         ReadStorage<'s, Transform>,
+        WriteStorage<'s, Ball>,
     );
 
-    fn run(&mut self, (mut balls, paddles, transforms): Self::SystemData) {
+    fn run(&mut self, (arena_config, paddles, transforms, mut balls): Self::SystemData) {
         // Check whether a ball collided, and bounce off accordingly.
         //
         // We also check for the velocity of the ball every time, to prevent multiple collisions
@@ -43,7 +45,7 @@ impl<'s> System<'s> for BounceSystem {
 
             // Bounce at the top or the bottom of the arena.
             if (ball_y <= ball.radius && ball.velocity[1] < 0.0)
-                || (ball_y >= ARENA_HEIGHT - ball.radius && ball.velocity[1] > 0.0) {
+                || (ball_y >= arena_config.height - ball.radius && ball.velocity[1] > 0.0) {
                 ball.velocity[1] = -ball.velocity[1];
             }
 

@@ -30,12 +30,13 @@ use amethyst::{
 use crate::{
     components::{
         Ball,
-        BALL_RADIUS,
-        BALL_VELOCITY_X,
-        BALL_VELOCITY_Y,
         Paddle,
-        PADDLE_WIDTH,
         Side,
+    },
+    config::{
+        ArenaConfig,
+        BallConfig,
+        PaddleConfig,
     },
     resources::{
         CurrentState,
@@ -43,15 +44,12 @@ use crate::{
         PlayersActive,
         ScoreText,
     },
+    states::paused::PausedState,
 };
-use crate::states::pause::PauseState;
-
-/// Constants.
-pub const ARENA_HEIGHT: f32 = 100.0;
-pub const ARENA_WIDTH: f32 = 100.0;
 
 /// The GameState contains the actual game area and gameplay. If the escape key is pressed during
 /// gameplay, a state transition to PauseState is initiated.
+#[derive(Default)]
 pub struct GameState;
 
 impl SimpleState for GameState {
@@ -64,6 +62,7 @@ impl SimpleState for GameState {
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
+        // load config
         initialise_camera(world);
         initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
@@ -77,7 +76,7 @@ impl SimpleState for GameState {
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
         if let StateEvent::Window(event) = &event {
             if is_key_down(&event, VirtualKeyCode::Escape) {
-                return Trans::Push(Box::new(PauseState));
+                return Trans::Push(Box::new(PausedState));
             }
         }
 
@@ -85,31 +84,45 @@ impl SimpleState for GameState {
     }
 }
 
-/// Initialise the camera
+/// Initialise the camera.
 fn initialise_camera(world: &mut World) {
+    let (arena_height, arena_width) = {
+        let config = &world.read_resource::<ArenaConfig>();
+        (config.height, config.width)
+    };
+
     let mut transform = Transform::default();
     transform.set_translation_z(1.0);
     world
         .create_entity()
         .with(Camera::from(Projection::orthographic(
             0.0,
-            ARENA_WIDTH,
+            arena_width,
             0.0,
-            ARENA_HEIGHT,
+            arena_height,
         )))
         .with(transform)
         .build();
 }
 
-/// Initialise the paddles
+/// Initialise the players.
 fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
+    let (arena_height, arena_width) = {
+        let config = &world.read_resource::<ArenaConfig>();
+        (config.height, config.width)
+    };
+    let (paddle_height, paddle_width) = {
+        let config = &world.read_resource::<PaddleConfig>();
+        (config.height, config.width)
+    };
+
     let mut left_transform = Transform::default();
     let mut right_transform = Transform::default();
 
     // correctly position the paddles
-    let y = ARENA_HEIGHT / 2.0;
-    left_transform.set_translation_xyz(PADDLE_WIDTH * 0.5, y, 0.0);
-    right_transform.set_translation_xyz(ARENA_WIDTH - PADDLE_WIDTH * 0.5, y, 0.0);
+    let y = arena_height / 2.0;
+    left_transform.set_translation_xyz(paddle_width * 0.5, y, 0.0);
+    right_transform.set_translation_xyz(arena_width - paddle_width * 0.5, y, 0.0);
 
     // assign the sprites for the paddles
     let sprite_render = SpriteRender {
@@ -121,7 +134,11 @@ fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle)
     let p1 = world
         .create_entity()
         .with(sprite_render.clone())
-        .with(Paddle::new(Side::Left))
+        .with(Paddle {
+            side: Side::Left,
+            width: paddle_width,
+            height: paddle_height,
+        })
         .with(left_transform)
         .build();
 
@@ -130,7 +147,11 @@ fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle)
         .create_entity()
         .with(sprite_render.clone())
         .with(Flipped::Horizontal)
-        .with(Paddle::new(Side::Right))
+        .with(Paddle {
+            side: Side::Right,
+            width: paddle_width,
+            height: paddle_height,
+        })
         .with(right_transform)
         .build();
 
@@ -138,10 +159,19 @@ fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle)
     world.add_resource(PlayersActive::default()); // TODO: actually select players
 }
 
-/// Initialise the ball
+/// Initialise the ball.
 fn initialise_ball(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
+    let (arena_width, arena_height) = {
+        let config = world.read_resource::<ArenaConfig>();
+        (config.width, config.height)
+    };
+    let (ball_velocity_x, ball_velocity_y, ball_radius) = {
+        let config = world.read_resource::<BallConfig>();
+        (config.velocity.x, config.velocity.y, config.radius)
+    };
+
     let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(ARENA_HEIGHT / 2.0, ARENA_WIDTH / 2.0, 0.0);
+    local_transform.set_translation_xyz(arena_height / 2.0, arena_width / 2.0, 0.0);
 
     // assign the sprite for the ball
     let sprite_render = SpriteRender {
@@ -154,8 +184,8 @@ fn initialise_ball(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
         .create_entity()
         .with(sprite_render)
         .with(Ball {
-            radius: BALL_RADIUS,
-            velocity: [BALL_VELOCITY_X, BALL_VELOCITY_Y],
+            velocity: [ball_velocity_x, ball_velocity_y],
+            radius: ball_radius,
         })
         .with(local_transform)
         .build();

@@ -1,0 +1,17 @@
+(
+    arena: (
+        height: 100.0,
+        width: 100.0,
+    ),
+    ball: (
+        velocity: Vector2(
+            x: 75.0,
+            y: 50.0
+        ),
+        radius: 2.5,
+    ),
+    paddle: (
+        height: 15.0,
+        width: 2.5,
+    )
+)

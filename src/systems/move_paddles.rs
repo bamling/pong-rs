@@ -12,14 +12,16 @@ use amethyst::{
 };
 
 use crate::{
-    components::PADDLE_HEIGHT,
     resources::{
         Command,
         CommandChannel,
         Player,
         Players
     },
-    states::game::ARENA_HEIGHT,
+    config::{
+        ArenaConfig,
+        PaddleConfig,
+    }
 };
 
 /// The MovePaddleSystem handles the moving of paddles on the X axis, depending on received
@@ -32,28 +34,47 @@ pub struct MovePaddlesSystem {
 impl<'s> System<'s> for MovePaddlesSystem {
     type SystemData = (
         Read<'s, CommandChannel>,
+        Read<'s, ArenaConfig>,
+        Read<'s, PaddleConfig>,
         ReadExpect<'s, Players>,
         WriteStorage<'s, Transform>,
     );
 
-    fn run(&mut self, (commands, players, mut transforms): Self::SystemData) {
+    fn run(&mut self, (
+        commands,
+        arena_config,
+        paddle_config,
+        players,
+        mut transforms
+    ): Self::SystemData) {
+
         for command in commands.read(self.command_reader.as_mut().unwrap()) {
             match command {
                 // handle movement commands for player 1
                 Command::MovePaddle(Player::P1, movement) => {
                     if let Some(transform) = transforms.get_mut(players.p1) {
-                        let new_y = calculate_y(*movement, transform.translation().y);
+                        let new_y = calculate_y(
+                            arena_config.height,
+                            paddle_config.height,
+                            *movement,
+                            transform.translation().y
+                        );
                         transform.set_translation_y(new_y);
                     }
-                }
+                },
                 // handle movement commands for player 2
                 Command::MovePaddle(Player::P2, movement) => {
                     if let Some(transform) = transforms.get_mut(players.p2) {
-                        let new_y = calculate_y(*movement, transform.translation().y);
+                        let new_y = calculate_y(
+                            arena_config.height,
+                            paddle_config.height,
+                            *movement,
+                            transform.translation().y
+                        );
                         transform.set_translation_y(new_y);
                     }
-                }
-                _ => {}
+                },
+                //_ => {}
             }
         }
     }
@@ -66,9 +87,9 @@ impl<'s> System<'s> for MovePaddlesSystem {
 }
 
 /// Calculates the new y position of the paddle based on the movement value and the current y.
-fn calculate_y(movement: f32, current_y: f32) -> f32 {
+fn calculate_y(arena_height: f32, paddle_height: f32, movement: f32, current_y: f32) -> f32 {
     let scaled_movement = 1.2 * movement as f32;
     (current_y + scaled_movement)
-        .min(ARENA_HEIGHT - PADDLE_HEIGHT * 0.5)
-        .max(PADDLE_HEIGHT * 0.5)
+        .min(arena_height - paddle_height * 0.5)
+        .max(paddle_height * 0.5)
 }

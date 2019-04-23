@@ -1,2 +1,2 @@
 pub mod game;
-pub mod pause;
+pub mod paused;

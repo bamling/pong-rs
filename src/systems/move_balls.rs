@@ -21,12 +21,12 @@ pub struct MoveBallsSystem;
 
 impl<'s> System<'s> for MoveBallsSystem {
     type SystemData = (
+        Read<'s, Time>,
         ReadStorage<'s, Ball>,
         WriteStorage<'s, Transform>,
-        Read<'s, Time>
     );
 
-    fn run(&mut self, (balls, mut transforms, time): Self::SystemData) {
+    fn run(&mut self, (time, balls, mut transforms): Self::SystemData) {
         // move every ball according to its speed, and the time passed
         for (ball, transform) in (&balls, &mut transforms).join() {
             let ball: &Ball= ball;

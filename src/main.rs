@@ -7,18 +7,20 @@ use amethyst::{
         DrawFlat2D,
         Pipeline,
         RenderBundle,
-        Stage
+        Stage,
     },
     ui::{
         DrawUi,
-        UiBundle
+        UiBundle,
     },
     utils::application_root_dir,
 };
 
+use config::GameConfig;
 use states::game::GameState;
 
 mod components;
+mod config;
 mod resources;
 mod states;
 mod systems;
@@ -31,6 +33,10 @@ fn main() -> amethyst::Result<()> {
     // display configuration
     let display_config_path = app_root.join("resources/display_config.ron");
     let display_config = DisplayConfig::load(&display_config_path);
+
+    // game config
+    let config_path = app_root.join("resources/config.ron");
+    let config = GameConfig::load(&config_path);
 
     // key bindings
     let key_bindings_path = app_root.join("resources/input.ron");
@@ -52,7 +58,10 @@ fn main() -> amethyst::Result<()> {
 
     let assets_dir = app_root.join("assets");
 
-    let mut game = Application::build(assets_dir, GameState)?
+    let mut game = Application::build(assets_dir, GameState::default())?
+        .with_resource(config.arena)
+        .with_resource(config.ball)
+        .with_resource(config.paddle)
         .build(game_data)?;
 
     game.run();

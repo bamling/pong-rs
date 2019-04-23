@@ -20,6 +20,9 @@ pub struct GameBundle;
 
 impl<'a, 'b> SystemBundle<'a, 'b> for GameBundle {
     fn build(self, dispatcher: &mut DispatcherBuilder) -> Result<(), Error> {
+        // for another way of handling paused systems, see:
+        //   http://www.amethyst.rs/book/master/state_specific_systems/custom_game_data.html
+
         // input system
         dispatcher.add(
             PlayerInputSystem::default().pausable(CurrentState::Game),

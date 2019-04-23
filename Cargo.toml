@@ -7,3 +7,6 @@ edition = "2018"
 [dependencies.amethyst]
 git = "https://github.com/amethyst/amethyst"
 features = ["nightly"]
+
+[dependencies]
+serde = "1.0.90"

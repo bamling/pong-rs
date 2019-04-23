@@ -3,7 +3,13 @@ use amethyst::{
         timing::Time,
         transform::Transform
     },
-    ecs::prelude::{Join, Read, ReadStorage, System, WriteStorage},
+    ecs::prelude::{
+        Join,
+        Read,
+        ReadStorage,
+        System,
+        WriteStorage
+    },
 };
 
 use crate::components::ball::Ball;
@@ -11,9 +17,9 @@ use crate::components::ball::Ball;
 /// The MoveBalls system handles the moving of the balls inside the arena. The balls move according
 /// to the amount of time passed between frames.
 #[derive(Default)]
-pub struct MoveBalls;
+pub struct MoveBallsSystem;
 
-impl<'s> System<'s> for MoveBalls {
+impl<'s> System<'s> for MoveBallsSystem {
     type SystemData = (
         ReadStorage<'s, Ball>,
         WriteStorage<'s, Transform>,

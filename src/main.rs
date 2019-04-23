@@ -2,12 +2,21 @@ use amethyst::{
     core::transform::TransformBundle,
     input::InputBundle,
     prelude::*,
-    renderer::{DisplayConfig, DrawFlat2D, Pipeline, RenderBundle, Stage},
-    ui::{DrawUi, UiBundle},
+    renderer::{
+        DisplayConfig,
+        DrawFlat2D,
+        Pipeline,
+        RenderBundle,
+        Stage
+    },
+    ui::{
+        DrawUi,
+        UiBundle
+    },
     utils::application_root_dir,
 };
 
-use states::pong::Pong;
+use states::game::GameState;
 
 mod components;
 mod resources;
@@ -43,7 +52,7 @@ fn main() -> amethyst::Result<()> {
 
     let assets_dir = app_root.join("assets");
 
-    let mut game = Application::build(assets_dir, Pong)?
+    let mut game = Application::build(assets_dir, GameState)?
         .build(game_data)?;
 
     game.run();

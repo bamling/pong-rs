@@ -1,19 +1,28 @@
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, ReadExpect, System, Write, WriteStorage},
+    ecs::prelude::{
+        Join,
+        ReadExpect,
+        System,
+        Write,
+        WriteStorage
+    },
     ui::UiText,
 };
 
 use crate::{
     components::Ball,
-    resources::{ScoreBoard, ScoreText},
-    states::pong::ARENA_WIDTH,
+    resources::{
+        ScoreBoard,
+        ScoreText
+    },
+    states::game::ARENA_WIDTH,
 };
 
 #[derive(Default)]
-pub struct Winner;
+pub struct WinnerSystem;
 
-impl<'s> System<'s> for Winner {
+impl<'s> System<'s> for WinnerSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,
         WriteStorage<'s, Transform>,

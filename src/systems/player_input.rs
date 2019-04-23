@@ -1,19 +1,30 @@
 use amethyst::{
-    ecs::{Read, ReadExpect, System, Write},
+    ecs::{
+        Read,
+        ReadExpect,
+        System,
+        Write
+    },
     input::InputHandler,
 };
 
 use crate::resources::{
-    commands::{Command, CommandChannel},
-    players::{Player, PlayersActive},
+    commands::{
+        Command,
+        CommandChannel
+    },
+    players::{
+        Player,
+        PlayersActive
+    },
 };
 
 /// PlayerInput system encapsulates player input handling and converts receiver input into
 /// Commands. These Commands are then published to other systems via the CommandChannel.
 #[derive(Default)]
-pub struct PlayerInput;
+pub struct PlayerInputSystem;
 
-impl<'s> System<'s> for PlayerInput {
+impl<'s> System<'s> for PlayerInputSystem {
     type SystemData = (
         Read<'s, InputHandler<String, String>>,
         ReadExpect<'s, PlayersActive>,

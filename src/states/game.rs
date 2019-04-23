@@ -1,10 +1,30 @@
 use amethyst::{
-    assets::{AssetStorage, Loader},
+    assets::{
+        AssetStorage,
+        Loader,
+    },
     core::transform::Transform,
+    input::is_key_down,
     prelude::*,
-    renderer::{Camera, Flipped, PngFormat, Projection, SpriteRender, SpriteSheet, SpriteSheetFormat,
-               SpriteSheetHandle, Texture, TextureMetadata},
-    ui::{Anchor, TtfFormat, UiText, UiTransform},
+    renderer::{
+        Camera,
+        Flipped,
+        PngFormat,
+        Projection,
+        SpriteRender,
+        SpriteSheet,
+        SpriteSheetFormat,
+        SpriteSheetHandle,
+        Texture,
+        TextureMetadata,
+        VirtualKeyCode,
+    },
+    ui::{
+        Anchor,
+        TtfFormat,
+        UiText,
+        UiTransform,
+    },
 };
 
 use crate::{
@@ -17,16 +37,23 @@ use crate::{
         PADDLE_WIDTH,
         Side,
     },
-    resources::{Players, PlayersActive, ScoreText},
+    resources::{
+        Players,
+        PlayersActive,
+        ScoreText,
+    },
 };
+use crate::states::pause::PauseState;
 
 /// Constants.
 pub const ARENA_HEIGHT: f32 = 100.0;
 pub const ARENA_WIDTH: f32 = 100.0;
 
-pub struct Pong;
+/// The GameState contains the actual game area and gameplay. If the escape key is pressed during
+/// gameplay, a state transition to PauseState is initiated.
+pub struct GameState;
 
-impl SimpleState for Pong {
+impl SimpleState for GameState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
 
@@ -37,6 +64,16 @@ impl SimpleState for Pong {
         initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
         initialise_scoreboard(world);
+    }
+
+    fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
+        if let StateEvent::Window(event) = &event {
+            if is_key_down(&event, VirtualKeyCode::Escape) {
+                return Trans::Push(Box::new(PauseState));
+            }
+        }
+
+        Trans::None
     }
 }
 

@@ -1,4 +1,7 @@
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
+use amethyst::ecs::prelude::{
+    Component,
+    DenseVecStorage
+};
 
 /// Constants.
 pub const BALL_VELOCITY_X: f32 = 75.0;

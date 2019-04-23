@@ -1,4 +1,7 @@
-use amethyst::ecs::prelude::{Component, DenseVecStorage};
+use amethyst::ecs::prelude::{
+    Component,
+    DenseVecStorage
+};
 
 /// Constants.
 pub const PADDLE_HEIGHT: f32 = 16.0;

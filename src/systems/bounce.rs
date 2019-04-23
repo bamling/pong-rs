@@ -1,19 +1,28 @@
 use amethyst::{
     core::transform::Transform,
-    ecs::prelude::{Join, ReadStorage, System, WriteStorage},
+    ecs::prelude::{
+        Join,
+        ReadStorage,
+        System,
+        WriteStorage
+    },
 };
 
 use crate::{
-    components::{Ball, Paddle, Side},
-    states::pong::ARENA_HEIGHT,
+    components::{
+        Ball,
+        Paddle,
+        Side
+    },
+    states::game::ARENA_HEIGHT,
 };
 
 /// The Bounce system handles the collision between balls and the paddles and arena. When a
 /// collision takes places, the balls velocity is reversed.
 #[derive(Default)]
-pub struct Bounce;
+pub struct BounceSystem;
 
-impl<'s> System<'s> for Bounce {
+impl<'s> System<'s> for BounceSystem {
     type SystemData = (
         WriteStorage<'s, Ball>,
         ReadStorage<'s, Paddle>,

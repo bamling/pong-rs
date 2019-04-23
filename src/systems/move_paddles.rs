@@ -13,18 +13,23 @@ use amethyst::{
 
 use crate::{
     components::PADDLE_HEIGHT,
-    resources::{Command, CommandChannel, Player, Players},
-    states::pong::ARENA_HEIGHT,
+    resources::{
+        Command,
+        CommandChannel,
+        Player,
+        Players
+    },
+    states::game::ARENA_HEIGHT,
 };
 
 /// The MovePaddleSystem handles the moving of paddles on the X axis, depending on received
 /// commands via CommandChannel.
 #[derive(Default)]
-pub struct MovePaddles {
+pub struct MovePaddlesSystem {
     command_reader: Option<ReaderId<Command>>
 }
 
-impl<'s> System<'s> for MovePaddles {
+impl<'s> System<'s> for MovePaddlesSystem {
     type SystemData = (
         Read<'s, CommandChannel>,
         ReadExpect<'s, Players>,
@@ -48,7 +53,7 @@ impl<'s> System<'s> for MovePaddles {
                         transform.set_translation_y(new_y);
                     }
                 }
-                _ => {}
+                //_ => {}
             }
         }
     }

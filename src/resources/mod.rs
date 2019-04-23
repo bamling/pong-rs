@@ -1,7 +1,17 @@
 pub use self::{
-    commands::{Command, CommandChannel},
-    players::{Player, Players, PlayersActive},
-    score_board::{ScoreBoard, ScoreText},
+    commands::{
+        Command,
+        CommandChannel
+    },
+    players::{
+        Player,
+        Players,
+        PlayersActive
+    },
+    score_board::{
+        ScoreBoard,
+        ScoreText
+    },
 };
 
 pub mod commands;

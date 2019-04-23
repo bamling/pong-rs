@@ -1,1 +1,2 @@
-pub mod pong;
+pub mod game;
+pub mod pause;

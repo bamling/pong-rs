@@ -53,7 +53,7 @@ impl<'s> System<'s> for MovePaddlesSystem {
                         transform.set_translation_y(new_y);
                     }
                 }
-                //_ => {}
+                _ => {}
             }
         }
     }

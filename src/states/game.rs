@@ -38,6 +38,7 @@ use crate::{
         Side,
     },
     resources::{
+        CurrentState,
         Players,
         PlayersActive,
         ScoreText,
@@ -57,6 +58,9 @@ impl SimpleState for GameState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         let world = data.world;
 
+        // set CurrentState to CurrentState::Game to enable/unpause game systems
+        *world.write_resource::<CurrentState>() = CurrentState::Game;
+
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
@@ -64,6 +68,10 @@ impl SimpleState for GameState {
         initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
         initialise_scoreboard(world);
+    }
+
+    fn on_resume(&mut self, data: StateData<GameData>) {
+        *data.world.write_resource::<CurrentState>() = CurrentState::Game;
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {

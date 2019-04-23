@@ -41,7 +41,7 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(UiBundle::<String, String>::new())?
         .with_bundle(systems::GameBundle)?;
 
-    let assets_dir = app_root.join("resources/assets");
+    let assets_dir = app_root.join("assets");
 
     let mut game = Application::build(assets_dir, Pong)?
         .build(game_data)?;

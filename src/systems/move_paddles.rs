@@ -34,12 +34,14 @@ impl<'s> System<'s> for MovePaddles {
     fn run(&mut self, (commands, players, mut transforms): Self::SystemData) {
         for command in commands.read(self.command_reader.as_mut().unwrap()) {
             match command {
+                // handle movement commands for player 1
                 Command::MovePaddle(Player::P1, movement) => {
                     if let Some(transform) = transforms.get_mut(players.p1) {
                         let new_y = calculate_y(*movement, transform.translation().y);
                         transform.set_translation_y(new_y);
                     }
                 }
+                // handle movement commands for player 2
                 Command::MovePaddle(Player::P2, movement) => {
                     if let Some(transform) = transforms.get_mut(players.p2) {
                         let new_y = calculate_y(*movement, transform.translation().y);

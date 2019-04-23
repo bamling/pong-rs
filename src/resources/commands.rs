@@ -6,8 +6,8 @@ use super::players::Player;
 #[derive(Debug)]
 pub enum Command {
     MovePaddle(Player, f32),
-    LaunchBall(Player),
-    Pause,
+    //LaunchBall(Player),
+    //Pause,
 }
 
 /// Custom type alias for EventChannel<Command>. Mostly for convenience.

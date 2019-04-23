@@ -1,7 +1,12 @@
 use amethyst::{
+    ecs::prelude::Entity,
     input::is_key_down,
     prelude::*,
     renderer::VirtualKeyCode,
+    ui::{
+        UiCreator,
+        UiFinder,
+    },
 };
 
 use crate::resources::CurrentState;
@@ -13,8 +18,30 @@ pub struct PausedState;
 
 impl SimpleState for PausedState {
     fn on_start(&mut self, data: StateData<GameData>) {
+        let world = data.world;
+
         // set CurrentState to CurrentState::Pause to pause game systems
-        *data.world.write_resource::<CurrentState>() = CurrentState::Pause;
+        *world.write_resource::<CurrentState>() = CurrentState::Pause;
+
+        // create ui elements
+        world.exec(|mut creator: UiCreator<'_>| {
+            creator.create("ui/paused.ron", ());
+        })
+    }
+
+    fn on_stop(&mut self, data: StateData<GameData>) {
+        let world = data.world;
+
+        // TODO: this feels wrong and inefficient?! there has to be a better way than this...
+        // delete ui elements
+        let mut paused: Option<Entity> = None;
+        world.exec(|finder: UiFinder| {
+            paused = finder.find("paused");
+        });
+
+        if let Some(entity) = paused {
+            world.delete_entity(entity);
+        }
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {

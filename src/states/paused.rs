@@ -40,7 +40,7 @@ impl SimpleState for PausedState {
         });
 
         if let Some(entity) = paused {
-            world.delete_entity(entity);
+            world.delete_entity(entity); // TODO: error handling
         }
     }
 

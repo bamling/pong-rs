@@ -1,4 +1,8 @@
+#[macro_use]
+extern crate log;
+
 use amethyst::{
+    assets::PrefabLoaderSystem,
     core::transform::TransformBundle,
     input::InputBundle,
     prelude::*,
@@ -17,7 +21,10 @@ use amethyst::{
 };
 
 use config::GameConfig;
-use states::game::GameState;
+use states::{
+    game::GamePrefabData,
+    loading::LoadingState,
+};
 
 mod components;
 mod config;
@@ -54,11 +61,12 @@ fn main() -> amethyst::Result<()> {
         .with_bundle(TransformBundle::new())?
         .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(key_bindings_path)?)?
         .with_bundle(UiBundle::<String, String>::new())?
-        .with_bundle(systems::GameBundle)?;
+        .with_bundle(systems::GameBundle)?
+        .with(PrefabLoaderSystem::<GamePrefabData>::default(), "", &[]);
 
     let assets_dir = app_root.join("assets");
 
-    let mut game = Application::build(assets_dir, GameState::default())?
+    let mut game = Application::build(assets_dir, LoadingState::default())?
         .with_resource(config.arena)
         .with_resource(config.ball)
         .with_resource(config.paddle)

@@ -1,0 +1,8 @@
+#![enable(implicit_some)]
+Container (
+    transform: (
+        id: "container",
+        anchor: Middle,
+        stretch: XY( x_margin: 0., y_margin: 0.),
+    )
+)

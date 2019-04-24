@@ -1,6 +1,6 @@
-Label (
+Text(
     transform: (
-        id: "paused",
+        id: "loading",
         anchor: Middle,
         x: 0.0,
         y: 0.0,
@@ -10,8 +10,8 @@ Label (
     ),
     text: (
         font: File("font/square.ttf", Ttf, ()),
+        text: "Loading",
         color: (1.0, 1.0, 1.0, 1.0),
-        text: "Paused",
         font_size: 25.0,
     ),
 )

@@ -1,0 +1,21 @@
+#![enable(implicit_some)]
+Prefab (
+    entities: [
+        (
+            data: (
+                transform: (
+                    translation: (0.0, 0.0, 1.0),
+                    rotation: (0.0, 0.0, 0.0, 0.0),
+                ),
+                camera: Orthographic(
+                    (
+                        l: 0.0,
+                        r: 100.0,
+                        b: 0.0,
+                        t: 100.0,
+                    )
+                )
+            )
+        )
+    ]
+)

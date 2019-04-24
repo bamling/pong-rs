@@ -1,11 +1,12 @@
 use amethyst::{
+    assets::Handle,
     ecs::prelude::Entity,
     input::is_key_down,
     prelude::*,
     renderer::VirtualKeyCode,
     ui::{
-        UiCreator,
-        UiFinder,
+        UiLoader,
+        UiPrefab,
     },
 };
 
@@ -14,7 +15,24 @@ use crate::resources::CurrentState;
 /// The PauseState stops (pauses) the GameState and displays a pause message to the player. This
 /// state is positioned on top of the GameState and is exited by pressing the escape key on the
 /// keyboard.
-pub struct PausedState;
+#[derive(Default)]
+pub struct PausedState {
+    current_ui: Option<Entity>,
+    current_ui_prefab: Option<Handle<UiPrefab>>,
+}
+
+impl PausedState {
+    fn enable_current_ui(&mut self, world: &mut World) {
+        let ui_prefab_handle = self.current_ui_prefab.get_or_insert_with(|| {
+            world.exec(|loader: UiLoader| {
+                println!("loading paused.ron");
+                return loader.load("ui/paused.ron", ());
+            })
+        });
+
+        self.current_ui = Some(world.create_entity().with(ui_prefab_handle.clone()).build())
+    }
+}
 
 impl SimpleState for PausedState {
     fn on_start(&mut self, data: StateData<GameData>) {
@@ -24,24 +42,14 @@ impl SimpleState for PausedState {
         *world.write_resource::<CurrentState>() = CurrentState::Pause;
 
         // create ui elements
-        world.exec(|mut creator: UiCreator<'_>| {
-            creator.create("ui/paused.ron", ());
-        })
+        self.enable_current_ui(world);
     }
 
-    fn on_stop(&mut self, data: StateData<GameData>) {
-        let world = data.world;
+    fn on_stop(&mut self, _data: StateData<GameData>) {
+        //let world = data.world;
 
-        // TODO: this feels wrong and inefficient?! there has to be a better way than this...
         // delete ui elements
-        let mut paused: Option<Entity> = None;
-        world.exec(|finder: UiFinder| {
-            paused = finder.find("paused");
-        });
-
-        if let Some(entity) = paused {
-            world.delete_entity(entity); // TODO: error handling
-        }
+        // TODO:
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {

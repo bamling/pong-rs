@@ -9,4 +9,5 @@ git = "https://github.com/amethyst/amethyst"
 features = ["nightly"]
 
 [dependencies]
+log = "0.4.6"
 serde = "1.0.90"

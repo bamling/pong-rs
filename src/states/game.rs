@@ -1,16 +1,17 @@
 use amethyst::{
     assets::{
         AssetStorage,
+        Handle,
         Loader,
+        Prefab,
     },
     core::transform::Transform,
     input::is_key_down,
     prelude::*,
     renderer::{
-        Camera,
         Flipped,
         PngFormat,
-        Projection,
+        PosNormTex,
         SpriteRender,
         SpriteSheet,
         SpriteSheetFormat,
@@ -22,9 +23,11 @@ use amethyst::{
     ui::{
         Anchor,
         TtfFormat,
+        UiPrefab,
         UiText,
         UiTransform,
     },
+    utils::scene::BasicScenePrefab,
 };
 
 use crate::{
@@ -47,13 +50,18 @@ use crate::{
     states::paused::PausedState,
 };
 
+pub type GamePrefabData = BasicScenePrefab<Vec<PosNormTex>>;
+
 /// The GameState contains the actual game area and gameplay. If the escape key is pressed during
 /// gameplay, a state transition to PauseState is initiated.
-#[derive(Default)]
-pub struct GameState;
+pub struct GameState {
+    game_prefab_handle: Handle<Prefab<GamePrefabData>>,
+    game_ui_handle: Handle<UiPrefab>,
+}
 
 impl SimpleState for GameState {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
+        info!("GameState.on_start");
         let world = data.world;
 
         // set CurrentState to CurrentState::Game to enable/unpause game systems
@@ -62,11 +70,12 @@ impl SimpleState for GameState {
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
-        // load config
-        initialise_camera(world);
+        // initialise ui/elements
+        self.initialise_prefab(world);
+        self.initialise_ui(world);
         initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
-        initialise_scoreboard(world);
+        initialise_scoreboard(world);;
     }
 
     fn on_resume(&mut self, data: StateData<GameData>) {
@@ -76,7 +85,7 @@ impl SimpleState for GameState {
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
         if let StateEvent::Window(event) = &event {
             if is_key_down(&event, VirtualKeyCode::Escape) {
-                return Trans::Push(Box::new(PausedState));
+                return Trans::Push(Box::new(PausedState::default()));
             }
         }
 
@@ -84,25 +93,30 @@ impl SimpleState for GameState {
     }
 }
 
-/// Initialise the camera.
-fn initialise_camera(world: &mut World) {
-    let (arena_height, arena_width) = {
-        let config = &world.read_resource::<ArenaConfig>();
-        (config.height, config.width)
-    };
+impl GameState {
+    pub fn new(
+        game_prefab_handle: Handle<Prefab<GamePrefabData>>,
+        game_ui_handle: Handle<UiPrefab>,
+    ) -> Self {
+        Self {
+            game_prefab_handle,
+            game_ui_handle,
+        }
+    }
 
-    let mut transform = Transform::default();
-    transform.set_translation_z(1.0);
-    world
-        .create_entity()
-        .with(Camera::from(Projection::orthographic(
-            0.0,
-            arena_width,
-            0.0,
-            arena_height,
-        )))
-        .with(transform)
-        .build();
+    fn initialise_prefab(&self, world: &mut World) {
+        world
+            .create_entity()
+            .with(self.game_prefab_handle.clone())
+            .build();
+    }
+
+    fn initialise_ui(&self, world: &mut World) {
+        world
+            .create_entity()
+            .with(self.game_ui_handle.clone())
+            .build();
+    }
 }
 
 /// Initialise the players.

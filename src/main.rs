@@ -16,6 +16,8 @@ use amethyst::{
     ui::{
         DrawUi,
         UiBundle,
+        UiPrefab,
+        UiLoaderSystem
     },
     utils::application_root_dir,
 };
@@ -57,9 +59,7 @@ fn main() -> amethyst::Result<()> {
         );
 
     let game_data = GameDataBuilder::default()
-        .with_bundle(RenderBundle::new(pipe, Some(display_config))
-            .with_sprite_sheet_processor()
-            .with_sprite_visibility_sorting(&[]))?
+        .with_bundle(RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor())?
         .with_bundle(TransformBundle::new())?
         .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(key_bindings_path)?)?
         .with_bundle(UiBundle::<String, String>::new())?

@@ -29,6 +29,7 @@ impl PausedState {
 
 impl SimpleState for PausedState {
     fn on_start(&mut self, data: StateData<GameData>) {
+        info!("PausedState.on_start");
         // create the paused ui
         self.paused_ui = Some(data.world
             .create_entity()
@@ -38,9 +39,10 @@ impl SimpleState for PausedState {
     }
 
     fn on_stop(&mut self, data: StateData<GameData>) {
+        info!("PausedState.on_stop");
         // delete paused ui
         if let Some(entity) = self.paused_ui {
-            data.world.delete_entity(entity).expect("Failed to delete paused entity");
+            let _ = data.world.delete_entity(entity);
         }
     }
 

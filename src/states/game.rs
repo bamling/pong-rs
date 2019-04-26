@@ -1,6 +1,5 @@
 use amethyst::{
     assets::{
-        AssetStorage,
         Handle,
         Loader,
         Prefab,
@@ -17,14 +16,9 @@ use amethyst::{
     prelude::*,
     renderer::{
         Flipped,
-        PngFormat,
         PosNormTex,
         SpriteRender,
-        SpriteSheet,
-        SpriteSheetFormat,
         SpriteSheetHandle,
-        Texture,
-        TextureMetadata,
         VirtualKeyCode,
     },
     ui::{
@@ -59,8 +53,9 @@ use crate::{
 
 pub type GamePrefabData = BasicScenePrefab<Vec<PosNormTex>>;
 
-/// The GameState contains the actual game area and gameplay. If the escape key is pressed during
-/// gameplay, a state transition to PauseState is initiated.
+/// The `GameState` contains the actual game area and gameplay. If the space key is pressed during
+/// gameplay, a state transition to `PauseState` is initiated. When the escape key is pressed, the
+/// game exists.
 pub struct GameState<'a, 'b> {
     /// `State` specific dispatcher.
     dispatcher: Option<Dispatcher<'a, 'b>>,
@@ -69,15 +64,14 @@ pub struct GameState<'a, 'b> {
 
     game_ui_handle: Handle<UiPrefab>,
     paused_ui_handle: Handle<UiPrefab>,
+
+    sprite_sheet_handle: SpriteSheetHandle,
 }
 
 impl<'a, 'b> SimpleState for GameState<'a, 'b> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         info!("GameState.on_start");
         let world = data.world;
-
-        // load the sprite sheet necessary to render the graphics
-        let sprite_sheet_handle = load_sprite_sheet(world);
 
         // create dispatcher
         self.create_dispatcher(world);
@@ -86,9 +80,13 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
         world.create_entity().with(self.scene_handle.clone()).build();
         world.create_entity().with(self.game_ui_handle.clone()).build();
 
-        initialise_players(world, sprite_sheet_handle.clone());
-        initialise_ball(world, sprite_sheet_handle);
+        initialise_players(world, self.sprite_sheet_handle.clone());
+        initialise_ball(world, self.sprite_sheet_handle.clone());
         initialise_scoreboard(world);
+    }
+
+    fn on_stop(&mut self, _data: StateData<GameData>) {
+        info!("GameState.on_stop");
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
@@ -108,7 +106,6 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
     }
 
     fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
-        data.data.update(&data.world);
         self.dispatcher.as_mut().unwrap().dispatch(&data.world.res);
 
         Trans::None
@@ -120,12 +117,15 @@ impl<'a, 'b> GameState<'a, 'b> {
         scene_handle: Handle<Prefab<GamePrefabData>>,
         game_ui_handle: Handle<UiPrefab>,
         paused_ui_handle: Handle<UiPrefab>,
+        sprite_sheet_handle: SpriteSheetHandle,
     ) -> Self {
+
         Self {
             dispatcher: None,
             scene_handle,
             game_ui_handle,
             paused_ui_handle,
+            sprite_sheet_handle,
         }
     }
 
@@ -269,33 +269,4 @@ fn initialise_scoreboard(world: &mut World) {
         )).build();
 
     world.add_resource(ScoreText { p1_score, p2_score });
-}
-
-/// Load the sprite sheet
-fn load_sprite_sheet(world: &mut World) -> SpriteSheetHandle {
-    // Load the sprite sheet necessary to render the graphics.
-    // The texture is the pixel data
-    // `sprite_sheet` is the layout of the sprites on the image
-    // `texture_handle` is a cloneable reference to the texture
-    let texture_handle = {
-        let loader = world.read_resource::<Loader>();
-        let texture_storage = world.read_resource::<AssetStorage<Texture>>();
-        loader.load(
-            "texture/pong_spritesheet.png",
-            PngFormat,
-            TextureMetadata::srgb_scale(),
-            (),
-            &texture_storage,
-        )
-    };
-
-    let loader = world.read_resource::<Loader>();
-    let sprite_sheet_store = world.read_resource::<AssetStorage<SpriteSheet>>();
-    loader.load(
-        "texture/pong_spritesheet.ron", // Here we load the associated ron file
-        SpriteSheetFormat,
-        texture_handle, // We pass it the texture we want it to use
-        (),
-        &sprite_sheet_store,
-    )
 }

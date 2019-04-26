@@ -41,7 +41,6 @@ impl<'s> System<'s> for WinnerSystem {
         mut ui_text,
         mut score_board
     ): Self::SystemData) {
-
         for (ball, transform) in (&mut balls, &mut transforms).join() {
             let ball: &mut Ball = ball;
             let transform: &mut Transform = transform;
@@ -75,9 +74,9 @@ impl<'s> System<'s> for WinnerSystem {
                 transform.set_translation_x(arena_config.width / 2.0); // Reset Position
 
                 // Print the score board.
-                println!(
-                    "Score: | {:^3} | {:^3} |",
-                    score_board.score_left, score_board.score_right
+                info!("Score: | {:^3} | {:^3} |",
+                      score_board.score_left,
+                      score_board.score_right
                 );
             }
         }

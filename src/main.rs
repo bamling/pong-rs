@@ -16,8 +16,6 @@ use amethyst::{
     ui::{
         DrawUi,
         UiBundle,
-        UiPrefab,
-        UiLoaderSystem
     },
     utils::application_root_dir,
 };

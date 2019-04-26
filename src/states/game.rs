@@ -5,8 +5,15 @@ use amethyst::{
         Loader,
         Prefab,
     },
-    core::transform::Transform,
-    input::is_key_down,
+    core::{
+        SystemBundle,
+        transform::Transform,
+    },
+    ecs::prelude::*,
+    input::{
+        is_close_requested,
+        is_key_down,
+    },
     prelude::*,
     renderer::{
         Flipped,
@@ -42,80 +49,97 @@ use crate::{
         PaddleConfig,
     },
     resources::{
-        CurrentState,
         Players,
         PlayersActive,
         ScoreText,
     },
     states::paused::PausedState,
+    systems::GameSystemsBundle,
 };
 
 pub type GamePrefabData = BasicScenePrefab<Vec<PosNormTex>>;
 
 /// The GameState contains the actual game area and gameplay. If the escape key is pressed during
 /// gameplay, a state transition to PauseState is initiated.
-pub struct GameState {
-    game_prefab_handle: Handle<Prefab<GamePrefabData>>,
+pub struct GameState<'a, 'b> {
+    /// `State` specific dispatcher.
+    dispatcher: Option<Dispatcher<'a, 'b>>,
+
+    scene_handle: Handle<Prefab<GamePrefabData>>,
+
     game_ui_handle: Handle<UiPrefab>,
+    paused_ui_handle: Handle<UiPrefab>,
 }
 
-impl SimpleState for GameState {
+impl<'a, 'b> SimpleState for GameState<'a, 'b> {
     fn on_start(&mut self, data: StateData<'_, GameData<'_, '_>>) {
         info!("GameState.on_start");
         let world = data.world;
 
-        // set CurrentState to CurrentState::Game to enable/unpause game systems
-        *world.write_resource::<CurrentState>() = CurrentState::Game;
-
         // load the sprite sheet necessary to render the graphics
         let sprite_sheet_handle = load_sprite_sheet(world);
 
-        // initialise ui/elements
-        self.initialise_prefab(world);
-        self.initialise_ui(world);
+        // create dispatcher
+        self.create_dispatcher(world);
+
+        // initialise ui and scene
+        world.create_entity().with(self.scene_handle.clone()).build();
+        world.create_entity().with(self.game_ui_handle.clone()).build();
+
         initialise_players(world, sprite_sheet_handle.clone());
         initialise_ball(world, sprite_sheet_handle);
-        initialise_scoreboard(world);;
-    }
-
-    fn on_resume(&mut self, data: StateData<GameData>) {
-        *data.world.write_resource::<CurrentState>() = CurrentState::Game;
+        initialise_scoreboard(world);
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
         if let StateEvent::Window(event) = &event {
-            if is_key_down(&event, VirtualKeyCode::Escape) {
-                return Trans::Push(Box::new(PausedState::default()));
+            if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
+                Trans::Quit
+            } else if is_key_down(&event, VirtualKeyCode::Space) {
+                Trans::Push(Box::new(PausedState::new(
+                    self.paused_ui_handle.clone(),
+                )))
+            } else {
+                Trans::None
             }
+        } else {
+            Trans::None
         }
+    }
+
+    fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
+        data.data.update(&data.world);
+        self.dispatcher.as_mut().unwrap().dispatch(&data.world.res);
 
         Trans::None
     }
 }
 
-impl GameState {
+impl<'a, 'b> GameState<'a, 'b> {
     pub fn new(
-        game_prefab_handle: Handle<Prefab<GamePrefabData>>,
+        scene_handle: Handle<Prefab<GamePrefabData>>,
         game_ui_handle: Handle<UiPrefab>,
+        paused_ui_handle: Handle<UiPrefab>,
     ) -> Self {
         Self {
-            game_prefab_handle,
+            dispatcher: None,
+            scene_handle,
             game_ui_handle,
+            paused_ui_handle,
         }
     }
 
-    fn initialise_prefab(&self, world: &mut World) {
-        world
-            .create_entity()
-            .with(self.game_prefab_handle.clone())
-            .build();
-    }
+    fn create_dispatcher(&mut self, world: &mut World) {
+        if self.dispatcher.is_none() {
+            let mut dispatcher_builder = DispatcherBuilder::new();
+            GameSystemsBundle::default()
+                .build(&mut dispatcher_builder)
+                .expect("Failed to register GameSystemsBundle");
 
-    fn initialise_ui(&self, world: &mut World) {
-        world
-            .create_entity()
-            .with(self.game_ui_handle.clone())
-            .build();
+            let mut dispatcher = dispatcher_builder.build();
+            dispatcher.setup(&mut world.res);
+            self.dispatcher = Some(dispatcher);
+        }
     }
 }
 

@@ -57,11 +57,13 @@ fn main() -> amethyst::Result<()> {
         );
 
     let game_data = GameDataBuilder::default()
-        .with_bundle(RenderBundle::new(pipe, Some(display_config)).with_sprite_sheet_processor())?
+        .with_bundle(RenderBundle::new(pipe, Some(display_config))
+            .with_sprite_sheet_processor()
+            .with_sprite_visibility_sorting(&[]))?
         .with_bundle(TransformBundle::new())?
         .with_bundle(InputBundle::<String, String>::new().with_bindings_from_file(key_bindings_path)?)?
         .with_bundle(UiBundle::<String, String>::new())?
-        .with_bundle(systems::GameBundle)?
+        .with_bundle(systems::CoreSystemsBundle)?
         .with(PrefabLoaderSystem::<GamePrefabData>::default(), "", &[]);
 
     let assets_dir = app_root.join("assets");

@@ -17,16 +17,3 @@ pub use self::{
 pub mod commands;
 pub mod players;
 pub mod score_board;
-
-/// CurrentState enum resource for keeping track of the current active state.
-#[derive(PartialEq)]
-pub enum CurrentState {
-    Game,
-    Pause,
-}
-
-impl Default for CurrentState {
-    fn default() -> Self {
-        CurrentState::Pause
-    }
-}

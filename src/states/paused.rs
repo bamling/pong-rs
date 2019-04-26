@@ -1,66 +1,60 @@
 use amethyst::{
     assets::Handle,
     ecs::prelude::Entity,
-    input::is_key_down,
+    input::{
+        is_close_requested,
+        is_key_down,
+    },
     prelude::*,
     renderer::VirtualKeyCode,
-    ui::{
-        UiLoader,
-        UiPrefab,
-    },
+    ui::UiPrefab,
 };
 
-use crate::resources::CurrentState;
-
-/// The PauseState stops (pauses) the GameState and displays a pause message to the player. This
-/// state is positioned on top of the GameState and is exited by pressing the escape key on the
+/// The `PauseState` stops (pauses) the `GameState` and displays a pause message to the player. This
+/// state is positioned on top of the `GameState` and is exited by pressing the escape key on the
 /// keyboard.
-#[derive(Default)]
 pub struct PausedState {
-    current_ui: Option<Entity>,
-    current_ui_prefab: Option<Handle<UiPrefab>>,
+    paused_ui: Option<Entity>,
+    paused_ui_handle: Handle<UiPrefab>,
 }
 
 impl PausedState {
-    fn enable_current_ui(&mut self, world: &mut World) {
-        let ui_prefab_handle = self.current_ui_prefab.get_or_insert_with(|| {
-            world.exec(|loader: UiLoader| {
-                println!("loading paused.ron");
-                return loader.load("ui/paused.ron", ());
-            })
-        });
-
-        self.current_ui = Some(world.create_entity().with(ui_prefab_handle.clone()).build())
+    pub fn new(paused_ui_handle: Handle<UiPrefab>) -> Self {
+        Self {
+            paused_ui: None,
+            paused_ui_handle,
+        }
     }
 }
 
 impl SimpleState for PausedState {
     fn on_start(&mut self, data: StateData<GameData>) {
-        let world = data.world;
-
-        // set CurrentState to CurrentState::Pause to pause game systems
-        *world.write_resource::<CurrentState>() = CurrentState::Pause;
-
-        // create ui elements
-        self.enable_current_ui(world);
+        // create the paused ui
+        self.paused_ui = Some(data.world
+            .create_entity()
+            .with(self.paused_ui_handle.clone())
+            .build()
+        );
     }
 
-    fn on_stop(&mut self, _data: StateData<GameData>) {
-        //let world = data.world;
-
-        // delete ui elements
-        // TODO:
+    fn on_stop(&mut self, data: StateData<GameData>) {
+        // delete paused ui
+        if let Some(entity) = self.paused_ui {
+            data.world.delete_entity(entity).expect("Failed to delete paused entity");
+        }
     }
 
     fn handle_event(&mut self, _data: StateData<GameData>, event: StateEvent) -> SimpleTrans {
         if let StateEvent::Window(event) = &event {
-            if is_key_down(&event, VirtualKeyCode::Escape) {
-                // Go back to the GameState.
-                return Trans::Pop;
+            if is_close_requested(&event) || is_key_down(&event, VirtualKeyCode::Escape) {
+                Trans::Quit
+            } else if is_key_down(&event, VirtualKeyCode::Space) {
+                Trans::Pop
+            } else {
+                Trans::None
             }
+        } else {
+            Trans::None
         }
-
-        // Escape isn't pressed, so we stay in this state.
-        Trans::None
     }
 }

@@ -24,7 +24,7 @@ use amethyst::{
     },
 };
 
-use crate::resources::PlayersActive;
+use crate::resources::GameMode;
 
 use super::game::{
     GamePrefabData,
@@ -170,6 +170,9 @@ impl SimpleState for MenuState {
                 40.0,
             )).build(),
         );
+
+        // register GameMode resource
+        world.res.insert(GameMode::MultiPlayer);
     }
 
     fn on_stop(&mut self, data: StateData<GameData>) {
@@ -202,17 +205,11 @@ impl SimpleState for MenuState {
             if is_key_down(&event, VirtualKeyCode::Return) {
                 match self.current_menu_item {
                     MenuItem::SinglePlayer => {
-                        world.add_resource(PlayersActive {
-                            p1: true,
-                            p2: false,
-                        });
-                    },
+                        *world.write_resource::<GameMode>() = GameMode::SinglePlayer;
+                    }
                     MenuItem::MultiPlayer => {
-                        world.add_resource(PlayersActive {
-                            p1: true,
-                            p2: true,
-                        });
-                    },
+                        *world.write_resource::<GameMode>() = GameMode::MultiPlayer;
+                    }
                     MenuItem::Quit => return Trans::Quit,
                 };
 

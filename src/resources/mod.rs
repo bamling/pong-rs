@@ -3,10 +3,10 @@ pub use self::{
         Command,
         CommandChannel,
     },
+    game_mode::GameMode,
     players::{
         Player,
         Players,
-        PlayersActive,
     },
     score_board::{
         ScoreBoard,
@@ -15,5 +15,6 @@ pub use self::{
 };
 
 pub mod commands;
+pub mod game_mode;
 pub mod players;
 pub mod score_board;

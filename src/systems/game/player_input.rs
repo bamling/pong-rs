@@ -3,20 +3,16 @@ use amethyst::{
         Read,
         ReadExpect,
         System,
-        Write
+        Write,
     },
     input::InputHandler,
 };
 
 use crate::resources::{
-    commands::{
-        Command,
-        CommandChannel
-    },
-    players::{
-        Player,
-        PlayersActive
-    },
+    Command,
+    CommandChannel,
+    GameMode,
+    Player,
 };
 
 /// PlayerInput system encapsulates player input handling and converts receiver input into
@@ -27,34 +23,22 @@ pub struct PlayerInputSystem;
 impl<'s> System<'s> for PlayerInputSystem {
     type SystemData = (
         Read<'s, InputHandler<String, String>>,
-        ReadExpect<'s, PlayersActive>,
+        ReadExpect<'s, GameMode>,
         Write<'s, CommandChannel>
     );
 
-    fn run(&mut self, (input, players_active, mut commands): Self::SystemData) {
-        // handle axis based input
-        for axis in input.bindings.axes() {
-            let axis: &String = axis;
-            let axis_value = input.axis_value(axis).unwrap_or(0.0) as f32;
-            //println!("{} = {}", axis, axis_value);
+    fn run(&mut self, (input, game_mode, mut commands): Self::SystemData) {
+        // always handle left player movement
+        let movement = input.axis_value("left_paddle");
+        if let Some(movement) = movement {
+            commands.single_write(Command::MovePaddle(Player::P1, movement as f32));
+        }
 
-            if axis_value == 0.0 {
-                continue;
-            }
-
-            // TODO:
-            // is this a good way of handling inputs for (potential) multiple players or would it
-            // be better to publish all inputs and ignore them in other systems if needed?
-            match axis.as_ref() {
-                // handle left_paddle if player 1 is active
-                "left_paddle" => if players_active.p1 {
-                    commands.single_write(Command::MovePaddle(Player::P1, axis_value));
-                },
-                // handle right paddle if player 2 is active
-                "right_paddle" => if players_active.p2{
-                    commands.single_write(Command::MovePaddle(Player::P2, axis_value));
-                },
-                _ => println!("unhandled axis input {} with value {}", axis, axis_value)
+        // handle right player if GameMode == MultiPlayer
+        if *game_mode == GameMode::MultiPlayer {
+            let movement = input.axis_value("right_paddle");
+            if let Some(movement) = movement {
+                commands.single_write(Command::MovePaddle(Player::P2, movement as f32));
             }
         }
     }

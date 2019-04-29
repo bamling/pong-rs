@@ -2,9 +2,13 @@ use amethyst::{
     core::bundle::SystemBundle,
     ecs::DispatcherBuilder,
     error::Error,
+    prelude::*,
 };
 
+use crate::resources::GameMode;
+
 use super::{
+    ai::MovePaddleSystem as AiMovePaddleSystem,
     bounce::BounceSystem,
     move_balls::MoveBallsSystem,
     move_paddles::MovePaddlesSystem,
@@ -35,6 +39,11 @@ impl<'a, 'b> SystemBundle<'a, 'b> for GameSystemsBundle {
             MovePaddlesSystem::default(), // doesn't have to be pausable due to the EventChannel logic
             "move_paddles_system",
             &["player_input_system"],
+        );
+        dispatcher.add(
+            AiMovePaddleSystem::default().pausable(GameMode::SinglePlayer),
+            "ai_move_paddle_system",
+            &[],
         );
 
         // collision systems

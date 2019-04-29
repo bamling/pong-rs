@@ -1,7 +1,6 @@
 use amethyst::{
     assets::{
         Handle,
-        Loader,
         Prefab,
     },
     core::{
@@ -23,7 +22,7 @@ use amethyst::{
     },
     ui::{
         Anchor,
-        TtfFormat,
+        FontHandle,
         UiPrefab,
         UiText,
         UiTransform,
@@ -44,7 +43,6 @@ use crate::{
     },
     resources::{
         Players,
-        PlayersActive,
         ScoreText,
     },
     states::paused::PausedState,
@@ -66,6 +64,7 @@ pub struct GameState<'a, 'b> {
     paused_ui_handle: Handle<UiPrefab>,
 
     sprite_sheet_handle: SpriteSheetHandle,
+    font_handle: FontHandle,
 }
 
 impl<'a, 'b> SimpleState for GameState<'a, 'b> {
@@ -80,9 +79,9 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
         world.create_entity().with(self.scene_handle.clone()).build();
         world.create_entity().with(self.game_ui_handle.clone()).build();
 
-        initialise_players(world, self.sprite_sheet_handle.clone());
-        initialise_ball(world, self.sprite_sheet_handle.clone());
-        initialise_scoreboard(world);
+        self.initialise_players(world);
+        self.initialise_ball(world);
+        self.initialise_scoreboard(world);
     }
 
     fn on_stop(&mut self, _data: StateData<GameData>) {
@@ -106,7 +105,9 @@ impl<'a, 'b> SimpleState for GameState<'a, 'b> {
     }
 
     fn update(&mut self, data: &mut StateData<GameData>) -> SimpleTrans {
-        self.dispatcher.as_mut().unwrap().dispatch(&data.world.res);
+        if let Some(dispatcher) = self.dispatcher.as_mut() {
+            dispatcher.dispatch(&data.world.res);
+        }
 
         Trans::None
     }
@@ -118,6 +119,7 @@ impl<'a, 'b> GameState<'a, 'b> {
         game_ui_handle: Handle<UiPrefab>,
         paused_ui_handle: Handle<UiPrefab>,
         sprite_sheet_handle: SpriteSheetHandle,
+        font_handle: FontHandle,
     ) -> Self {
 
         Self {
@@ -126,9 +128,11 @@ impl<'a, 'b> GameState<'a, 'b> {
             game_ui_handle,
             paused_ui_handle,
             sprite_sheet_handle,
+            font_handle,
         }
     }
 
+    /// Creates the `State` specific `Dispatcher`.
     fn create_dispatcher(&mut self, world: &mut World) {
         if self.dispatcher.is_none() {
             let mut dispatcher_builder = DispatcherBuilder::new();
@@ -141,132 +145,123 @@ impl<'a, 'b> GameState<'a, 'b> {
             self.dispatcher = Some(dispatcher);
         }
     }
-}
 
-/// Initialise the players.
-fn initialise_players(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
-    let (arena_height, arena_width) = {
-        let config = &world.read_resource::<ArenaConfig>();
-        (config.height, config.width)
-    };
-    let (paddle_height, paddle_width) = {
-        let config = &world.read_resource::<PaddleConfig>();
-        (config.height, config.width)
-    };
+    /// Initialise the players.
+    fn initialise_players(&mut self, world: &mut World) {
+        let (arena_height, arena_width) = {
+            let config = &world.read_resource::<ArenaConfig>();
+            (config.height, config.width)
+        };
+        let (paddle_height, paddle_width) = {
+            let config = &world.read_resource::<PaddleConfig>();
+            (config.height, config.width)
+        };
 
-    let mut left_transform = Transform::default();
-    let mut right_transform = Transform::default();
+        let mut left_transform = Transform::default();
+        let mut right_transform = Transform::default();
 
-    // correctly position the paddles
-    let y = arena_height / 2.0;
-    left_transform.set_translation_xyz(paddle_width * 0.5, y, 0.0);
-    right_transform.set_translation_xyz(arena_width - paddle_width * 0.5, y, 0.0);
+        // correctly position the paddles
+        let y = arena_height / 2.0;
+        left_transform.set_translation_xyz(paddle_width * 0.5, y, 0.0);
+        right_transform.set_translation_xyz(arena_width - paddle_width * 0.5, y, 0.0);
 
-    // assign the sprites for the paddles
-    let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
-        sprite_number: 0, // paddle is the first sprite in the sprite_sheet
-    };
+        // assign the sprites for the paddles
+        let sprite_render = SpriteRender {
+            sprite_sheet: self.sprite_sheet_handle.clone(),
+            sprite_number: 0, // paddle is the first sprite in the sprite_sheet
+        };
 
-    // create player 1 entity
-    let p1 = world
-        .create_entity()
-        .with(sprite_render.clone())
-        .with(Paddle {
-            side: Side::Left,
-            width: paddle_width,
-            height: paddle_height,
-        })
-        .with(left_transform)
-        .build();
+        // create player 1 entity
+        let p1 = world
+            .create_entity()
+            .with(sprite_render.clone())
+            .with(Paddle {
+                side: Side::Left,
+                width: paddle_width,
+                height: paddle_height,
+            })
+            .with(left_transform)
+            .build();
 
-    // create player 2 entity
-    let p2 = world
-        .create_entity()
-        .with(sprite_render.clone())
-        .with(Flipped::Horizontal)
-        .with(Paddle {
-            side: Side::Right,
-            width: paddle_width,
-            height: paddle_height,
-        })
-        .with(right_transform)
-        .build();
+        // create player 2 entity
+        let p2 = world
+            .create_entity()
+            .with(sprite_render.clone())
+            .with(Flipped::Horizontal)
+            .with(Paddle {
+                side: Side::Right,
+                width: paddle_width,
+                height: paddle_height,
+            })
+            .with(right_transform)
+            .build();
 
-    world.add_resource(Players { p1, p2 });
-    world.add_resource(PlayersActive::default()); // TODO: actually select players
-}
+        world.add_resource(Players { p1, p2 });
+    }
 
-/// Initialise the ball.
-fn initialise_ball(world: &mut World, sprite_sheet_handle: SpriteSheetHandle) {
-    let (arena_width, arena_height) = {
-        let config = world.read_resource::<ArenaConfig>();
-        (config.width, config.height)
-    };
-    let (ball_velocity_x, ball_velocity_y, ball_radius) = {
-        let config = world.read_resource::<BallConfig>();
-        (config.velocity.x, config.velocity.y, config.radius)
-    };
+    /// Initialise the ball.
+    fn initialise_ball(&mut self, world: &mut World) {
+        let (arena_width, arena_height) = {
+            let config = world.read_resource::<ArenaConfig>();
+            (config.width, config.height)
+        };
+        let (ball_velocity_x, ball_velocity_y, ball_radius) = {
+            let config = world.read_resource::<BallConfig>();
+            (config.velocity.x, config.velocity.y, config.radius)
+        };
 
-    let mut local_transform = Transform::default();
-    local_transform.set_translation_xyz(arena_height / 2.0, arena_width / 2.0, 0.0);
+        let mut local_transform = Transform::default();
+        local_transform.set_translation_xyz(arena_height / 2.0, arena_width / 2.0, 0.0);
 
-    // assign the sprite for the ball
-    let sprite_render = SpriteRender {
-        sprite_sheet: sprite_sheet_handle,
-        sprite_number: 1, // ball is the second sprite in the sprite_sheet
-    };
+        // assign the sprite for the ball
+        let sprite_render = SpriteRender {
+            sprite_sheet: self.sprite_sheet_handle.clone(),
+            sprite_number: 1, // ball is the second sprite in the sprite_sheet
+        };
 
-    // create the ball entity
-    world
-        .create_entity()
-        .with(sprite_render)
-        .with(Ball {
-            velocity: [ball_velocity_x, ball_velocity_y],
-            radius: ball_radius,
-        })
-        .with(local_transform)
-        .build();
-}
+        // create the ball entity
+        world
+            .create_entity()
+            .with(sprite_render)
+            .with(Ball {
+                velocity: [ball_velocity_x, ball_velocity_y],
+                radius: ball_radius,
+            })
+            .with(local_transform)
+            .build();
+    }
 
-/// Initialise a ui scoreboard
-fn initialise_scoreboard(world: &mut World) {
-    let font = world.read_resource::<Loader>().load(
-        "font/square.ttf",
-        TtfFormat,
-        Default::default(),
-        (),
-        &world.read_resource(),
-    );
+    /// Initialise a ui scoreboard
+    fn initialise_scoreboard(&mut self, world: &mut World) {
+        let p1_transform = UiTransform::new(
+            "P1".to_string(), Anchor::TopMiddle,
+            -50.0, -50.0, 1.0, 200.0, 50.0,
+        );
+        let p2_transform = UiTransform::new(
+            "P2".to_string(), Anchor::TopMiddle,
+            50.0, -50.0, 1.0, 200.0, 50.0,
+        );
 
-    let p1_transform = UiTransform::new(
-        "P1".to_string(), Anchor::TopMiddle,
-        -50.0, -50.0, 1.0, 200.0, 50.0,
-    );
-    let p2_transform = UiTransform::new(
-        "P2".to_string(), Anchor::TopMiddle,
-        50.0, -50.0, 1.0, 200.0, 50.0,
-    );
+        let p1_score = world
+            .create_entity()
+            .with(p1_transform)
+            .with(UiText::new(
+                self.font_handle.clone(),
+                "0".to_string(),
+                [1.0, 1.0, 1.0, 1.0],
+                50.0,
+            )).build();
 
-    let p1_score = world
-        .create_entity()
-        .with(p1_transform)
-        .with(UiText::new(
-            font.clone(),
-            "0".to_string(),
-            [1.0, 1.0, 1.0, 1.0],
-            50.0,
-        )).build();
+        let p2_score = world
+            .create_entity()
+            .with(p2_transform)
+            .with(UiText::new(
+                self.font_handle.clone(),
+                "0".to_string(),
+                [1.0, 1.0, 1.0, 1.0],
+                50.0,
+            )).build();
 
-    let p2_score = world
-        .create_entity()
-        .with(p2_transform)
-        .with(UiText::new(
-            font.clone(),
-            "0".to_string(),
-            [1.0, 1.0, 1.0, 1.0],
-            50.0,
-        )).build();
-
-    world.add_resource(ScoreText { p1_score, p2_score });
+        world.add_resource(ScoreText { p1_score, p2_score });
+    }
 }

@@ -23,7 +23,7 @@ use amethyst::{
 use config::GameConfig;
 use states::{
     game::GamePrefabData,
-    loading::LoadingState,
+    LoadingState,
 };
 
 mod components;

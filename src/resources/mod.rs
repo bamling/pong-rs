@@ -1,16 +1,16 @@
 pub use self::{
     commands::{
         Command,
-        CommandChannel
+        CommandChannel,
     },
     players::{
         Player,
         Players,
-        PlayersActive
+        PlayersActive,
     },
     score_board::{
         ScoreBoard,
-        ScoreText
+        ScoreText,
     },
 };
 

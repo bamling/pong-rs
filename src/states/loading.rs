@@ -25,15 +25,17 @@ use amethyst::{
         VirtualKeyCode,
     },
     ui::{
+        FontHandle,
+        TtfFormat,
         UiCreator,
         UiLoader,
         UiPrefab,
     },
 };
 
-use super::game::{
-    GamePrefabData,
-    GameState,
+use super::{
+    game::GamePrefabData,
+    menu::MenuState,
 };
 
 /// The `LoadingState` loads all required `Assets` and ensures everything is ready before
@@ -49,6 +51,7 @@ pub struct LoadingState {
     paused_ui_handle: Option<Handle<UiPrefab>>,
 
     sprite_sheet_handle: Option<SpriteSheetHandle>,
+    font_handle: Option<FontHandle>,
 }
 
 impl SimpleState for LoadingState {
@@ -76,6 +79,9 @@ impl SimpleState for LoadingState {
 
         // load sprite sheet handle
         self.sprite_sheet_handle = Some(self.load_sprite_sheet(world));
+
+        // load font handle
+        self.font_handle = Some(self.load_font(world));
     }
 
     fn on_stop(&mut self, _data: StateData<GameData>) {
@@ -115,12 +121,13 @@ impl SimpleState for LoadingState {
                     let _ = data.world.delete_entity(entity);
                 }
 
-                // remove LoadingState from the stack and switch to GameState
-                Trans::Switch(Box::new(GameState::new(
+                // remove LoadingState from the stack and switch to MenuState
+                Trans::Switch(Box::new(MenuState::new(
                     self.scene_handle.take().unwrap(),
                     self.game_ui_handle.take().unwrap(),
                     self.paused_ui_handle.take().unwrap(),
                     self.sprite_sheet_handle.take().unwrap(),
+                    self.font_handle.take().unwrap(),
                 )))
             }
             // loading failed, quit LoadingState and the game
@@ -134,7 +141,7 @@ impl SimpleState for LoadingState {
 }
 
 impl LoadingState {
-    /// Load the sprite sheet
+    /// Load the sprite sheet.
     fn load_sprite_sheet(&mut self, world: &mut World) -> SpriteSheetHandle {
         // Load the sprite sheet necessary to render the graphics.
         // The texture is the pixel data
@@ -160,6 +167,17 @@ impl LoadingState {
             texture_handle, // We pass it the texture we want it to use
             &mut self.progress,
             &sprite_sheet_store,
+        )
+    }
+
+    /// Load the game font.
+    fn load_font(&mut self, world: &mut World) -> FontHandle {
+        world.read_resource::<Loader>().load(
+            "font/square.ttf",
+            TtfFormat,
+            Default::default(),
+            (),
+            &world.read_resource(),
         )
     }
 }

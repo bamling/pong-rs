@@ -8,20 +8,9 @@ pub enum Player {
 }
 
 /// Keep track of which players are active and can move paddles.
-//#[derive(Default)]
 pub struct PlayersActive {
     pub p1: bool,
     pub p2: bool,
-}
-
-// TODO: remove
-impl Default for PlayersActive {
-    fn default() -> Self {
-        PlayersActive {
-            p1: true,
-            p2: true,
-        }
-    }
 }
 
 /// Holds the entities referring to a player. A player entity generally consists of a paddle

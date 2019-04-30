@@ -45,7 +45,7 @@ impl<'s> System<'s> for MovePaddleSystem {
                 .expect("No ball found")
         };
 
-        let mut paddle_transform = transforms
+        let paddle_transform = transforms
             .get_mut(players.p2)
             .expect("No player 2 found");
 

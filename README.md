@@ -4,4 +4,4 @@ Classic **Pong** game implementation made with the [Rust](https://www.rust-lang.
 
 This project was mostly used to get a better grasp of the programming language while gaining some experience with the game engine.
 
-![alt text](https://github.com/adam-p/markdown-here/raw/master/src/common/images/icon48.png "Logo Title Text 1")
+![](https://github.com/bamling/pong-rs/blob/master/game.gif)
